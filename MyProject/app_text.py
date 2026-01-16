@@ -15,7 +15,10 @@ st.title("Gemini Chat")
 gif_files = [
     "TokeruMendako.gif",
     "MendakoKaiwaTyu.gif",
-    "MendakoKaiten.gif"
+    "MendakoKaiten.gif",
+    "MendakoOdoroki.gif",
+    "MendakoNaki.gif",
+
 ]
 
 gif_b64_dict = {}
@@ -57,7 +60,7 @@ if "one_time_mendako" not in st.session_state:
 
 # ユーザー入力から「嬉しい/楽しい」を検出する簡易判定
 positive_keywords = [
-    "嬉しい", "うれしい", "嬉", "楽しい", "たのしい", "楽", "感謝", "ありがとう", "最高", "やった", "よかった", "良い", "楽しかった"
+    "嬉しい", "うれしい", "嬉", "楽しい", "たのしい", "楽", "感謝", "ありがとう", "有難う", "有り難う","最高", "やった", "よかった", "良", "楽しかった"
 ]
 
 def contains_positive(text: str) -> bool:
@@ -67,6 +70,31 @@ def contains_positive(text: str) -> bool:
         if kw in text:
             return True
     return False
+
+negative_keywords = [
+    "かなしい", "悲", "寂", "さびしい", "怒", "むかつく", "悪", "嫌", "いやだ", "つらい", "辛", "苦","疲", "痛", "病", "しんどい"
+]
+
+def contains_negative(text: str) -> bool:
+    if not text:
+        return False
+    for kw in negative_keywords:
+        if kw in text:
+            return True
+    return False
+
+surprise_keywords = [
+    "びっくり", "驚", "おどろき", "まじ", "本当", "ほんと", "えっ", "えー", "うそ", "ウソ", "信じられない", "しんじられない", "嘘", "ヤバい", "やばい"
+]
+
+def contains_surprise(text: str) -> bool:
+    if not text:
+        return False
+    for kw in surprise_keywords:
+        if kw in text:
+            return True
+    return False
+
 
 # 過去のメッセージを表示
 for message in st.session_state.messages:
@@ -96,6 +124,22 @@ if prompt := st.chat_input("メッセージを入力してください"):
         st.session_state.one_time_mendako = "MendakoKaiten.gif"
     # 表示対象は、一時設定があればそれを優先し、なければ現在の選択を使用
     selected_mendako = st.session_state.one_time_mendako or st.session_state.selected_mendako
+
+    # ユーザーの文章からネガティブな表現を検出し、表示する大きなGIFを決定
+    negative = contains_negative(prompt)
+    if negative:
+        st.session_state.one_time_mendako = "MendakoNaki.gif"
+    # 表示対象は、一時設定があればそれを優先し、なければ現在の選択を使用
+    selected_mendako = st.session_state.one_time_mendako or st.session_state.selected_mendako
+
+    # ユーザーの文章から驚きの表現を検出し、表示する大きなGIFを決定
+    surprise = contains_surprise(prompt)
+    if surprise:
+        st.session_state.one_time_mendako = "MendakoOdoroki.gif"
+    # 表示対象は、一時設定があればそれを優先し、なければ現在の選択を使用
+    selected_mendako = st.session_state.one_time_mendako or st.session_state.selected_mendako
+
+
 
     # 会話履歴をGemini形式に変換
     contents = []
